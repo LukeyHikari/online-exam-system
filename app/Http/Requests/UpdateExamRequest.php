@@ -12,18 +12,20 @@ class UpdateExamRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user() && $this->user()->role === 'teacher';
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'title'            => 'required|string|max:255',
+            'subject_id'       => 'required|exists:subjects,id',
+            'section_id'       => 'required|exists:sections,id',
+            'duration_minutes' => 'required|integer|min:1',
+            'starts_at'        => 'required|date',
+            'ends_at'          => 'required|date|after:starts_at',
+            'questions'        => 'required|array|min:1',
+            'questions.*'      => 'exists:questions,id'
         ];
     }
 }

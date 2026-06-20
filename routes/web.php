@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Student\DashboardController;
 use App\Http\Controllers\Student\ExamController;
+use App\Http\Controllers\Teacher\ExamController as TeacherExamController;
 use App\Http\Controllers\Teacher\QuestionController;
 use App\Http\Controllers\Teacher\ResultController;
 use Illuminate\Support\Facades\Route;
@@ -30,8 +31,8 @@ Route::middleware('auth')->group(function () {
     //Teacher
     Route::middleware('role:teacher')->prefix('teacher')->name('teacher.')->group(function () {
         Route::resource('questions', QuestionController::class);
-        Route::resource('exams', ExamController::class);
-        Route::post('exams/{exam}/publish', [ExamController::class, 'publish'])->name('exams.publish');
+        Route::resource('exams', TeacherExamController::class);
+        Route::post('exams/{exam}/publish', [TeacherExamController::class, 'publish'])->name('exams.publish');
         Route::get('results', [ResultController::class, 'index'])->name('results.index');
         Route::get('results/{exam}', [ResultController::class, 'show'])->name('results.show');
     });
