@@ -3,7 +3,7 @@
 @section('content')
     <section class="bg-white border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
                 <div class="lg:col-span-7 space-y-6">
                     <div class="inline-flex items-center space-x-2 bg-red-50 text-[#880000] px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
                         <span>Official Examination Portal</span>
@@ -51,7 +51,16 @@
                 </div>
 
                 <div class="lg:col-span-5">
-                    <img src="{{ asset('images/landing-illustration.png') }}" alt="Illustration of OES or PUP na lang" class="w-full rounded-lg shadow-md">
+                    <div class="h-80 lg:h-[420px] bg-[#880000] rounded-3xl shadow-xl p-8 flex flex-col justify-between text-white">
+                        <div>
+                            <span class="text-sm uppercase tracking-[0.3em] text-white/80">PUP OES Inspiration</span>
+                            <h3 class="mt-4 text-3xl font-extrabold leading-tight">Your next achievement starts with one question.</h3>
+                        </div>
+                        <div class="mt-6">
+                            <p class="text-sm text-white/90 leading-relaxed">"Study hard, stay curious, and remember that every exam is a chance to show how much you’ve grown. Your hard work today becomes the success you celebrate tomorrow."</p>
+                            <p class="mt-6 text-xs uppercase tracking-[0.28em] text-white/70">— PUP OES</p>
+                        </div>
+                    </div>
                 </div>
 
             </div>
