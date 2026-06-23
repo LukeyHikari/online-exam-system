@@ -3,19 +3,23 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Exam;
+use App\Models\ExamSession;
+use App\Models\StudentAnswer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ExamController extends Controller
 {
-    public function results(){
-        return view('student.results');
-    }
-
-    public function resultShow(ExamSession $session)
+    public function results()
     {
-        abort_unless($session->student_id === auth()->id(), 403);
-
-        $session->load(['exam.questions.choices', 'answers.choice']);
+        $session = auth()->user()
+            ->examSessions()
+            ->with(['exam.questions', 'answers.choice'])
+            ->whereNotNull('submitted_at')
+            ->latest('submitted_at')
+            ->first();
 
         return view('student.results', compact('session'));
     }
@@ -23,19 +27,6 @@ class ExamController extends Controller
     public function show(Exam $exam)
     {
         return view('student.exams.show', compact('exam'));
-    }
-
-    public function start(Exam $exam)
-    {
-        ExamSession::firstOrCreate([
-            'exam_id' => $exam->id,
-            'student_id' => auth()->id(),
-        ], [
-            'started_at' => now(),
-            'status' => 'in_progress',
-        ]);
-
-        return redirect()->route('student.exams.show', $exam);
     }
 
     public function submit(Request $request, Exam $exam)
