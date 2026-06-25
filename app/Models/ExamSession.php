@@ -46,7 +46,7 @@ class ExamSession extends Model
 
         $this->update([
             'score'        => $correct,
-            'status'       => 'graded',
+            'status'       => 'submitted', 
             'submitted_at' => now(),
         ]);
     }

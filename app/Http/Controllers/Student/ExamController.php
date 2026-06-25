@@ -76,7 +76,6 @@ class ExamController extends Controller
             ]);
         }
 
-        // If session already submitted, redirect to results
         if ($session->submitted_at) {
             return redirect()->route('student.results.show', $session);
         }
@@ -131,14 +130,12 @@ class ExamController extends Controller
             abort(403);
         }
 
-        // If time has expired, grade immediately
         if ($session->timeRemaining() <= 0) {
             $session->load('answers.choice', 'exam.questions');
             $session->grade();
             return response()->json(['status' => 'expired', 'remaining' => 0]);
         }
 
-        // Accept JSON body, form-encoded, or raw beacon payload
         $answers = $request->input('answers', null);
         if (is_null($answers)) {
             $content = $request->getContent();
@@ -150,7 +147,6 @@ class ExamController extends Controller
             }
         }
 
-        // Only replace answers when answers are provided (avoid deleting on empty beacon)
         if (is_array($answers) && count($answers) > 0) {
             \App\Models\StudentAnswer::where('session_id', $session->id)->delete();
 
@@ -183,7 +179,6 @@ class ExamController extends Controller
             'status' => 'in_progress',
         ]);
 
-        // store answers
         StudentAnswer::where('session_id', $session->id)->delete();
 
         $answers = $request->input('answers', []);
@@ -205,4 +200,28 @@ class ExamController extends Controller
 
         return redirect()->route('student.results');
     }
+public function forceSubmit(Exam $exam)
+{
+    $studentId = auth()->id();
+
+    $session = ExamSession::where('exam_id', $exam->id)
+        ->where('student_id', $studentId)
+        ->first();
+
+    if (!$session) {
+        return redirect()->route('student.dashboard')
+            ->with('info', 'No active exam session found.');
+    }
+
+    if ($session->submitted_at) {
+        return redirect()->route('student.dashboard')
+            ->with('info', 'Exam was already submitted.');
+    }
+
+    $session->load('answers.choice', 'exam.questions');
+    $session->grade();
+
+    return redirect()->route('student.dashboard')
+        ->with('warning', 'Your exam was automatically submitted because time ran out.');
+}
 }

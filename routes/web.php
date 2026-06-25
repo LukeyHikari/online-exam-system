@@ -47,5 +47,6 @@ Route::middleware('auth')->group(function () {
         Route::post('exams/{exam}/autosave', [ExamController::class, 'autosave'])->name('student.exams.autosave');
         Route::get('exams/{exam}/status', [ExamController::class, 'status'])->name('student.exams.status');
         Route::post('exams/{exam}/submit', [ExamController::class, 'submit'])->name('student.exams.submit');
+        Route::post('exams/{exam}/force-submit', [ExamController::class, 'forceSubmit'])->name('student.exams.force-submit');
     });
 });

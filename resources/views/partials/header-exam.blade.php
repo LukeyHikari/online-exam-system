@@ -32,75 +32,90 @@
 </header>
 
 <script>
-    // Grab duration from database, convert to seconds (fallback to 90 mins if missing)
-    let timeRemaining = {{ optional($exam)->duration_minutes ?? 90 }} * 60; 
-    
+    const examId = {{ optional($exam)->id ?? 'null' }};
+    const totalDuration = {{ optional($exam)->duration_minutes ?? 90 }} * 60;
+
+    const timerKey = `exam_timer_${examId}`;
     const timerElement = document.getElementById('exam-timer');
-
-    // Autosave/submit config
     const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-    const autosaveUrl = '{{ isset($exam) ? route('student.exams.autosave', optional($exam)->id) : '' }}';
+    const autosaveUrl = '{{ isset($exam) ? route("student.exams.autosave", optional($exam)->id) : "" }}';
 
-    function collectAnswers(){
+    let deadline;
+    const stored = localStorage.getItem(timerKey);
+
+    if (stored) {
+        deadline = parseInt(stored);
+    } else {
+        deadline = Date.now() + totalDuration * 1000;
+        localStorage.setItem(timerKey, deadline);
+    }
+
+    function getTimeRemaining() {
+        return Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+    }
+
+    function collectAnswers() {
         const data = {};
-        try{
+        try {
             const form = document.getElementById('examForm');
             if (!form) return data;
-            const inputs = form.querySelectorAll('input[type="radio"]');
-            inputs.forEach(i => {
-                if (i.checked){
-                    const name = i.name; // answers[123]
-                    const match = name.match(/answers\[(\d+)\]/);
+            form.querySelectorAll('input[type="radio"]').forEach(i => {
+                if (i.checked) {
+                    const match = i.name.match(/answers\[(\d+)\]/);
                     if (match) data[match[1]] = parseInt(i.value);
                 }
             });
-        }catch(e){}
+        } catch (e) {}
         return data;
     }
 
-    const countdown = setInterval(() => {
-        if (timeRemaining <= 0) {
-            clearInterval(countdown);
-            timerElement.innerHTML = "00:00:00";
-            
-            // Auto-save current answers then submit the exam
-            try{
-                if (autosaveUrl){
-                    const payloadObj = { answers: collectAnswers(), _token: csrf };
-                    const blob = new Blob([JSON.stringify(payloadObj)], { type: 'application/json' });
-                    // Use sendBeacon to persist answers even if unload is happening
-                    navigator.sendBeacon(autosaveUrl, blob);
-                }
-            }catch(e){}
+    function submitExam() {
+        clearInterval(countdown);
+        localStorage.removeItem(timerKey);
 
-            // Submit the exam form if present, otherwise submit header fallback
-            setTimeout(()=>{
-                const examForm = document.getElementById('examForm');
-                if (examForm){
-                    examForm.submit();
-                } else {
-                    const headerSubmit = document.getElementById('exam-submit-form');
-                    if (headerSubmit) headerSubmit.submit();
-                }
-            }, 250);
+        try {
+            if (autosaveUrl) {
+                const payload = JSON.stringify({ answers: collectAnswers(), _token: csrf });
+                const blob = new Blob([payload], { type: 'application/json' });
+                navigator.sendBeacon(autosaveUrl, blob);
+            }
+        } catch (e) {}
+
+        setTimeout(() => {
+            const examForm = document.getElementById('examForm');
+            if (examForm) {
+                examForm.submit();
+            } else {
+                document.getElementById('exam-submit-form')?.submit();
+            }
+        }, 250);
+    }
+
+    function updateTimer() {
+        const timeRemaining = getTimeRemaining();
+
+        if (timeRemaining <= 0) {
+            timerElement.innerHTML = "00:00:00";
+            submitExam();
             return;
         }
 
-        // Calculate hours, minutes, and seconds
-        let hours = Math.floor(timeRemaining / 3600);
-        let minutes = Math.floor((timeRemaining % 3600) / 60);
-        let seconds = timeRemaining % 60;
+        const hours   = String(Math.floor(timeRemaining / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((timeRemaining % 3600) / 60)).padStart(2, '0');
+        const seconds = String(timeRemaining % 60).padStart(2, '0');
 
-        // Format to always show two digits (e.g., 09 instead of 9)
-        hours = hours < 10 ? "0" + hours : hours;
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-
-        // Update the HTML
         timerElement.innerHTML = `${hours}:${minutes}:${seconds}`;
+    }
 
-        // Decrease time by 1 second
-        timeRemaining--;
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('exam-submit-form')?.addEventListener('submit', () => {
+            localStorage.removeItem(timerKey);
+        });
+        document.getElementById('examForm')?.addEventListener('submit', () => {
+            localStorage.removeItem(timerKey);
+        });
+    });
 
-    }, 1000); 
+    updateTimer();
+    const countdown = setInterval(updateTimer, 1000);
 </script>

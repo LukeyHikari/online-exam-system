@@ -150,7 +150,7 @@
                     <p class="mt-1 text-sm text-gray-500">Enrolled sections.</p>
                 </div>
                 
-                <div class="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm max-h-[400px] overflow-y-auto">
+                <div class="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm max-h-[220px] overflow-y-auto">
                     <div class="space-y-3">
                         @forelse($classes as $section)
                             <div class="rounded-3xl border border-gray-100 bg-gray-50 p-4">
@@ -159,6 +159,25 @@
                             </div>
                         @empty
                             <p class="text-sm text-gray-500 text-center py-4">You're not enrolled in any sections yet.</p>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-semibold text-gray-900">Missing Assessments</h2>
+                    <p class="mt-1 text-sm text-gray-500">Missed exams that are no longer available.</p>
+                </div>
+
+                <div class="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm max-h-[300px] overflow-y-auto">
+                    <div class="space-y-3">
+                        @forelse($missedExams as $exam)
+                            <div class="rounded-3xl border border-gray-100 bg-gray-50 p-4">
+                                <p class="font-semibold text-gray-900">{{ $exam->title }}</p>
+                                <p class="mt-1 text-sm text-gray-600">{{ $exam->subject->code ?? 'SUBJ' }} • {{ $exam->section->name ?? 'Section' }}</p>
+                                <p class="mt-2 text-xs text-gray-500">Missed on {{ $exam->ends_at->format('M d, Y h:i A') }}</p>
+                            </div>
+                        @empty
+                            <p class="text-sm text-gray-500 text-center py-4">No missed assessments.</p>
                         @endforelse
                     </div>
                 </div>
@@ -171,7 +190,6 @@
 
 @push('scripts')
 <script>
-    // Replace 'Opens' labels with Take Exam button when start time is reached
     (function(){
         const opensEls = Array.from(document.querySelectorAll('.exam-opens'));
         if (!opensEls.length) return;
@@ -194,7 +212,6 @@
             });
         }
 
-        // check immediately and then every second
         checkStarts();
         setInterval(checkStarts, 1000);
     })();

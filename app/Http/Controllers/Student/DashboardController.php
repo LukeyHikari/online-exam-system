@@ -23,6 +23,11 @@ class DashboardController extends Controller
             ->unique()
             ->toArray();
 
+        $startedExamIds = $student->examSessions()
+            ->pluck('exam_id')
+            ->unique()
+            ->toArray();
+
         $upcomingExams = Exam::with(['subject', 'section', 'teacher'])
             ->whereIn('section_id', $sectionIds)
             ->where('status', 'published')
@@ -36,6 +41,14 @@ class DashboardController extends Controller
             ->where('status', 'published')
             ->whereNotIn('id', $completedExamIds)
             ->count();
+
+        $missedExams = Exam::with(['subject', 'section', 'teacher'])
+            ->whereIn('section_id', $sectionIds)
+            ->where('status', 'published')
+            ->where('ends_at', '<', now())
+            ->whereNotIn('id', $startedExamIds)
+            ->orderBy('ends_at', 'desc')
+            ->get();
 
         $recentSessions = $student->examSessions()
             ->with('exam.subject', 'exam.section')
@@ -58,7 +71,8 @@ class DashboardController extends Controller
             'assignedCount',
             'recentSessions',
             'classes',
-            'scoresByExam'
+            'scoresByExam',
+            'missedExams'
         ));
     }
 }

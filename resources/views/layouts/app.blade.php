@@ -25,4 +25,43 @@
 
     @stack('scripts')
 </body>
+
+<script>
+    (function checkExamDeadline() {
+        const examTimerKeys = Object.keys(localStorage).filter(k => k.startsWith('exam_timer_'));
+
+        examTimerKeys.forEach(timerKey => {
+            const deadline = parseInt(localStorage.getItem(timerKey));
+            if (!deadline) return;
+
+            const examId = timerKey.replace('exam_timer_', '');
+            const now = Date.now();
+
+            function postForceSubmit() {
+                localStorage.removeItem(timerKey);
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/student/exams/${examId}/force-submit`;
+
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrf;
+
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            if (now >= deadline) {
+                postForceSubmit();
+            } else {
+                setTimeout(postForceSubmit, deadline - now);
+            }
+        });
+    })();
+</script>
+
 </html>
