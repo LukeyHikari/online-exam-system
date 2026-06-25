@@ -52,17 +52,14 @@
 
             <div class="flex items-center gap-3">
 
-                {{-- Hamburger — mobile only --}}
+                @if(auth()->user()->role !== 'student')
                 <button class="md:hidden text-white focus:outline-none"
                         @click="menuOpen = !menuOpen"
                         aria-label="Toggle menu">
-                    <svg x-show="!menuOpen" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                    <svg x-show="menuOpen" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
+                    <svg x-show="!menuOpen" ...></svg>
+                    <svg x-show="menuOpen" ...></svg>
                 </button>
+                @endif
 
                 <div class="flex items-center border-l border-white/20 pl-3"
                      @click.outside="profileOpen = false">
