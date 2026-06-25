@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class ExamSession extends Model
 {
@@ -57,5 +58,15 @@ class ExamSession extends Model
         $total   = $this->exam->duration_minutes * 60;
 
         return max(0, $total - $elapsed);
+    }
+
+    public function getStartedAtAttribute($value)
+    {
+        return Carbon::parse($value, 'UTC')->setTimezone('Asia/Manila');
+    }
+
+    public function getSubmittedAtAttribute($value)
+    {
+        return Carbon::parse($value, 'UTC')->setTimezone('Asia/Manila');
     }
 }
